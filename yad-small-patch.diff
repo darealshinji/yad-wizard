@@ -1,0 +1,705 @@
+--- a/configure.ac
++++ b/configure.ac
+@@ -13,6 +13,9 @@
+ 
+ IT_PROG_INTLTOOL([0.40.0])
+ 
++#source code: https://sourceforge.net/p/yad-dialog/code/987/tree/trunk/
++CFLAGS=""
++CXXFLAGS=""
+ AC_PROG_CC
+ 
+ AC_ARG_WITH([gtk],
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -6,29 +6,15 @@
+ 
+ yad_SOURCES = 			\
+ 	about.c			\
+-	calendar.c		\
+-	color.c			\
+-	dnd.c           	\
+-	entry.c			\
+ 	file.c			\
+-	font.c			\
+ 	form.c			\
+-	icons.c			\
+-	list.c			\
+-	multi-progress.c	\
+-	notebook.c		\
+-	notification.c		\
+ 	option.c		\
+-	paned.c			\
+-	picture.c       \
+-	print.c			\
+ 	progress.c		\
+-	scale.c			\
+ 	text.c			\
+ 	util.c			\
+ 	main.c			\
+ 	yad.h			\
+-	calendar.xpm
++	$(NULL)
+ 
+ if HTML
+ yad_SOURCES += html.c
+@@ -36,6 +22,8 @@
+ 
+ yad_CFLAGS = $(GTK_CFLAGS) $(HTML_CFLAGS) $(SPELL_CFLAGS) $(SOURCEVIEW_CFLAGS)
+ yad_LDADD = $(GTK_LIBS) $(HTML_LIBS) $(SPELL_LIBS) $(SOURCEVIEW_LIBS)
++yad_CFLAGS += $(XCFLAGS)
++yad_LDFLAGS = $(XLDFLAGS)
+ 
+ if BUILD_IB
+ bin_PROGRAMS += yad-icon-browser
+--- a/src/about.c
++++ b/src/about.c
+@@ -52,7 +52,8 @@
+ #ifdef HAVE_SPELL
+                                        "Built with GtkSpell\n"
+ #endif
+-                                       "Using GTK+ %d.%d.%d\n"),
++                                       "Using GTK+ %d.%d.%d\n"
++                                       "\nSVN r987 (v0.36.3) with patches:\nhttps://tinyurl.com/yadpatch\n"),
+                                      gtk_major_version, gtk_minor_version, gtk_micro_version);
+ 
+   dialog = gtk_about_dialog_new ();
+--- a/src/form.c
++++ b/src/form.c
+@@ -1013,7 +1013,7 @@
+               gtk_widget_set_name (e, "yad-form-button");
+               gtk_button_set_alignment (GTK_BUTTON (e), 0.5, 0.5);
+               if (fld->type == YAD_FIELD_BUTTON)
+-                gtk_button_set_relief (GTK_BUTTON (e), GTK_RELIEF_NONE);
++                gtk_button_set_relief (GTK_BUTTON (e), GTK_RELIEF_HALF);
+ #if !GTK_CHECK_VERSION(3,0,0)
+               gtk_table_attach (GTK_TABLE (tbl), e, col * 2, 2 + col * 2, row, row + 1, GTK_EXPAND | GTK_FILL, 0, 5, 5);
+ #else
+--- a/src/main.c
++++ b/src/main.c
+@@ -193,6 +193,7 @@
+   /* create main widget */
+   switch (options.mode)
+     {
++/*
+     case YAD_MODE_CALENDAR:
+       mw = calendar_create_widget (dlg);
+       break;
+@@ -205,12 +206,15 @@
+     case YAD_MODE_ENTRY:
+       mw = entry_create_widget (dlg);
+       break;
++*/
+     case YAD_MODE_FILE:
+       mw = file_create_widget (dlg);
+       break;
++/*
+     case YAD_MODE_FONT:
+       mw = font_create_widget (dlg);
+       break;
++*/
+     case YAD_MODE_FORM:
+       mw = form_create_widget (dlg);
+       break;
+@@ -219,6 +223,7 @@
+       mw = html_create_widget (dlg);
+       break;
+ #endif
++/*
+     case YAD_MODE_ICONS:
+       mw = icons_create_widget (dlg);
+       break;
+@@ -239,12 +244,15 @@
+     case YAD_MODE_PICTURE:
+       mw = picture_create_widget (dlg);
+       break;
++*/
+     case YAD_MODE_PROGRESS:
+       mw = progress_create_widget (dlg);
+       break;
++/*
+     case YAD_MODE_SCALE:
+       mw = scale_create_widget (dlg);
+       break;
++*/
+     case YAD_MODE_TEXTINFO:
+       mw = text_create_widget (dlg);
+       break;
+@@ -590,6 +598,7 @@
+ {
+   switch (options.mode)
+     {
++/*
+     case YAD_MODE_CALENDAR:
+       calendar_print_result ();
+       break;
+@@ -599,15 +608,19 @@
+     case YAD_MODE_ENTRY:
+       entry_print_result ();
+       break;
++*/
+     case YAD_MODE_FILE:
+       file_print_result ();
+       break;
++/*
+     case YAD_MODE_FONT:
+       font_print_result ();
+       break;
++*/
+     case YAD_MODE_FORM:
+       form_print_result ();
+       break;
++/*
+     case YAD_MODE_LIST:
+       list_print_result ();
+       break;
+@@ -620,6 +633,7 @@
+     case YAD_MODE_SCALE:
+       scale_print_result ();
+       break;
++*/
+     case YAD_MODE_TEXTINFO:
+       text_print_result ();
+       break;
+@@ -777,6 +791,7 @@
+       g_print ("%s (GTK+ %d.%d.%d)\n", VERSION, gtk_major_version, gtk_minor_version, gtk_micro_version);
+       break;
+ 
++/*
+     case YAD_MODE_NOTIFICATION:
+       ret = yad_notification_run ();
+       break;
+@@ -784,6 +799,7 @@
+     case YAD_MODE_PRINT:
+       ret = yad_print_run ();
+       break;
++*/
+ 
+     default:
+       dialog = create_dialog ();
+@@ -797,6 +813,7 @@
+ #endif
+ 
+       /* make some specific init actions */
++/*
+       if (options.mode == YAD_MODE_NOTEBOOK)
+         notebook_swallow_childs ();
+       else if (options.mode == YAD_MODE_PANED)
+@@ -806,6 +823,7 @@
+           if (options.picture_data.size == YAD_PICTURE_FIT)
+             picture_fit_to_window ();
+         }
++*/
+ 
+       /* run main loop */
+       gtk_main ();
+@@ -826,10 +844,12 @@
+             }
+         }
+ #ifndef G_OS_WIN32
++/*
+       if (options.mode == YAD_MODE_NOTEBOOK)
+         notebook_close_childs ();
+       else if (options.mode == YAD_MODE_PANED)
+         paned_close_childs ();
++*/
+       /* autokill option for progress dialog */
+       if (!options.kill_parent)
+         {
+--- a/src/option.c
++++ b/src/option.c
+@@ -23,26 +23,38 @@
+ 
+ static gboolean add_button (const gchar *, const gchar *, gpointer, GError **);
+ static gboolean set_text_align (const gchar *, const gchar *, gpointer, GError **);
++/*
+ static gboolean add_column (const gchar *, const gchar *, gpointer, GError **);
++*/
+ static gboolean add_field (const gchar *, const gchar *, gpointer, GError **);
++/*
+ static gboolean add_bar (const gchar *, const gchar *, gpointer, GError **);
+ static gboolean add_tab (const gchar *, const gchar *, gpointer, GError **);
+ static gboolean add_scale_mark (const gchar *, const gchar *, gpointer, GError **);
+ static gboolean add_palette (const gchar *, const gchar *, gpointer, GError **);
++*/
+ static gboolean add_confirm_overwrite (const gchar *, const gchar *, gpointer, GError **);
+ static gboolean add_file_filter (const gchar *, const gchar *, gpointer, GError **);
++/*
+ static gboolean set_color_mode (const gchar *, const gchar *, gpointer, GError **);
++*/
+ static gboolean set_buttons_layout (const gchar *, const gchar *, gpointer, GError **);
+ static gboolean set_align (const gchar *, const gchar *, gpointer, GError **);
+ static gboolean set_justify (const gchar *, const gchar *, gpointer, GError **);
++/*
+ static gboolean set_tab_pos (const gchar *, const gchar *, gpointer, GError **);
+ static gboolean set_scale_value (const gchar *, const gchar *, gpointer, GError **);
+ static gboolean set_ellipsize (const gchar *, const gchar *, gpointer, GError **);
++*/
+ static gboolean set_expander (const gchar *, const gchar *, gpointer, GError **);
++/*
+ static gboolean set_orient (const gchar *, const gchar *, gpointer, GError **);
+ static gboolean set_print_type (const gchar *, const gchar *, gpointer, GError **);
++*/
+ static gboolean set_progress_log (const gchar *, const gchar *, gpointer, GError **);
++/*
+ static gboolean set_size (const gchar *, const gchar *, gpointer, GError **);
++*/
+ #ifndef G_OS_WIN32
+ static gboolean parse_signal (const gchar *, const gchar *, gpointer, GError **);
+ #endif
+@@ -200,6 +212,7 @@
+   { NULL }
+ };
+ 
++/*
+ static GOptionEntry calendar_options[] = {
+   { "calendar", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &calendar_mode,
+     N_("Display calendar dialog"), NULL },
+@@ -267,6 +280,7 @@
+     N_("Set the right entry icon action"), N_("CMD") },
+   { NULL }
+ };
++*/
+ 
+ static GOptionEntry file_options[] = {
+   { "file", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &file_mode,
+@@ -282,6 +296,7 @@
+   { NULL }
+ };
+ 
++/*
+ static GOptionEntry font_options[] = {
+   { "font", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &font_mode,
+     N_("Display font selection dialog"), NULL },
+@@ -293,12 +308,18 @@
+     N_("Separate output of font description"), NULL },
+   { NULL }
+ };
++*/
+ 
+ static GOptionEntry form_options[] = {
+   { "form", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &form_mode,
+     N_("Display form dialog"), NULL },
+   { "field", 0, 0, G_OPTION_ARG_CALLBACK, add_field,
+-    N_ ("Add field to form (see man page for list of possible types)"), N_("LABEL[:TYPE]") },
++    N_ ("Add field to form (TYPE may be:\n"
++        "                                                 "
++        " H RO NUM CHK CB CBE CE FL SFL DIR CDIR\n"
++        "                                                 "
++        " FN MFL MDIR DT SCL CLR BTN FBTN LBL TXT)"),
++    N_("LABEL[:TYPE]") },
+   { "align", 0, G_OPTION_FLAG_NOALIAS, G_OPTION_ARG_CALLBACK, set_align,
+     N_("Set alignment of filed labels (left, center or right)"), N_("TYPE") },
+   { "columns", 0, 0, G_OPTION_ARG_INT, &options.form_data.columns,
+@@ -332,6 +353,7 @@
+ };
+ #endif
+ 
++/*
+ static GOptionEntry icons_options[] = {
+   { "icons", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &icons_mode,
+     N_("Display icons box dialog"), NULL },
+@@ -345,6 +367,7 @@
+     N_("Set the width of dialog items"), NULL },
+   { "term", 0, 0, G_OPTION_ARG_STRING, &options.icons_data.term,
+     /* xgettext: no-c-format */
++/*
+     N_("Use specified pattern for launch command in terminal (default: xterm -e %s)"), N_("PATTERN") },
+   { "sort-by-name", 0, 0, G_OPTION_ARG_NONE, &options.icons_data.sort_by_name,
+     N_("Sort items by name instead of filename"), NULL },
+@@ -415,7 +438,9 @@
+   { "align", 0, G_OPTION_FLAG_NOALIAS, G_OPTION_ARG_CALLBACK, set_align,
+     N_("Set alignment of bar labels (left, center or right)"), N_("TYPE") },
+   { "auto-close", 0, G_OPTION_FLAG_NOALIAS, G_OPTION_ARG_NONE, &options.progress_data.autoclose,
++*/
+     /* xgettext: no-c-format */
++/*
+     N_("Dismiss the dialog when 100% of all bars has been reached"), NULL },
+ #ifndef G_OS_WIN32
+   { "auto-kill", 0, G_OPTION_FLAG_NOALIAS, G_OPTION_ARG_NONE, &options.progress_data.autokill,
+@@ -477,6 +502,7 @@
+     N_("Add headers to page"), NULL },
+   { NULL }
+ };
++*/
+ 
+ static GOptionEntry progress_options[] = {
+   { "progress", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &progress_mode,
+@@ -507,6 +533,7 @@
+   { NULL }
+ };
+ 
++/*
+ static GOptionEntry scale_options[] = {
+   { "scale", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &scale_mode,
+     N_("Display scale dialog"), NULL },
+@@ -530,6 +557,7 @@
+     N_("Add mark to scale (may be used multiple times)"), N_("NAME:VALUE") },
+   { NULL }
+ };
++*/
+ 
+ static GOptionEntry text_options[] = {
+   { "text-info", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &text_mode,
+@@ -631,6 +659,7 @@
+   return TRUE;
+ }
+ 
++/*
+ static gboolean
+ add_column (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+ {
+@@ -676,6 +705,7 @@
+   g_strfreev (cstr);
+   return TRUE;
+ }
++*/
+ 
+ static gboolean
+ add_field (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+@@ -740,6 +770,7 @@
+   return TRUE;
+ }
+ 
++/*
+ static gboolean
+ add_bar (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+ {
+@@ -764,6 +795,7 @@
+   g_strfreev (bstr);
+   return TRUE;
+ }
++*/
+ 
+ static gboolean
+ add_tab (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+@@ -881,6 +913,7 @@
+   return TRUE;
+ }
+ 
++/*
+ static gboolean
+ set_color_mode (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+ {
+@@ -893,6 +926,7 @@
+ 
+   return TRUE;
+ }
++*/
+ 
+ static gboolean
+ set_buttons_layout (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+@@ -945,6 +979,7 @@
+   return TRUE;
+ }
+ 
++/*
+ static gboolean
+ set_tab_pos (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+ {
+@@ -961,6 +996,7 @@
+ 
+   return TRUE;
+ }
++*/
+ 
+ static gboolean
+ set_expander (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+@@ -972,6 +1008,7 @@
+   return TRUE;
+ }
+ 
++/*
+ static gboolean
+ set_scale_value (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+ {
+@@ -980,6 +1017,7 @@
+ 
+   return TRUE;
+ }
++*/
+ 
+ static gboolean
+ set_ellipsize (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+@@ -1037,6 +1075,7 @@
+   return TRUE;
+ }
+ 
++/*
+ static gboolean
+ set_size (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+ {
+@@ -1049,6 +1088,7 @@
+ 
+   return TRUE;
+ }
++*/
+ 
+ static gboolean
+ add_image_path (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+@@ -1303,12 +1343,15 @@
+ #endif
+ 
+   /* Initialize calendar data */
++/*
+   options.calendar_data.day = -1;
+   options.calendar_data.month = -1;
+   options.calendar_data.year = -1;
+   options.calendar_data.details = NULL;
++*/
+ 
+   /* Initialize color data */
++/*
+   options.color_data.init_color = NULL;
+   options.color_data.gtk_palette = FALSE;
+   options.color_data.use_palette = FALSE;
+@@ -1317,11 +1360,15 @@
+   options.color_data.extra = FALSE;
+   options.color_data.alpha = FALSE;
+   options.color_data.mode = YAD_COLOR_HEX;
++*/
+ 
+   /* Initialize DND data */
++/*
+   options.dnd_data.tooltip = FALSE;
++*/
+ 
+   /* Initialize entry data */
++/*
+   options.entry_data.entry_text = NULL;
+   options.entry_data.entry_label = NULL;
+   options.entry_data.hide_text = FALSE;
+@@ -1331,6 +1378,7 @@
+   options.entry_data.licon_action = NULL;
+   options.entry_data.ricon = NULL;
+   options.entry_data.ricon_action = NULL;
++*/
+ 
+   /* Initialize file data */
+   options.file_data.directory = FALSE;
+@@ -1342,8 +1390,10 @@
+   options.file_data.image_filt = NULL;
+ 
+   /* Initialize font data */
++/*
+   options.font_data.preview = NULL;
+   options.font_data.separate_output = FALSE;
++*/
+ 
+   /* Initialize form data */
+   options.form_data.fields = NULL;
+@@ -1363,6 +1413,7 @@
+ #endif
+ 
+   /* Initialize icons data */
++/*
+   options.icons_data.directory = NULL;
+   options.icons_data.compact = FALSE;
+   options.icons_data.generic = FALSE;
+@@ -1374,8 +1425,10 @@
+ #ifdef HAVE_GIO
+   options.icons_data.monitor = FALSE;
+ #endif
++*/
+ 
+   /* Initialize list data */
++/*
+   options.list_data.columns = NULL;
+   options.list_data.no_headers = FALSE;
+   options.list_data.checkbox = FALSE;
+@@ -1396,32 +1449,45 @@
+   options.list_data.regex_search = FALSE;
+   options.list_data.clickable = TRUE;
+   options.list_data.no_selection = FALSE;
++*/
+ 
+   /* Initialize multiprogress data */
++/*
+   options.multi_progress_data.bars = NULL;
+   options.multi_progress_data.watch_bar = 0;
++*/
+ 
+   /* Initialize notebook data */
++/*
+   options.notebook_data.tabs = NULL;
+   options.notebook_data.borders = 5;
+   options.notebook_data.pos = GTK_POS_TOP;
++*/
+ 
+   /* Initialize notification data */
++/*
+   options.notification_data.middle = TRUE;
+   options.notification_data.hidden = FALSE;
+   options.notification_data.menu = NULL;
++*/
+ 
+   /* Initialize paned data */
++/*
+   options.paned_data.orient = GTK_ORIENTATION_VERTICAL;
+   options.paned_data.splitter = -1;
++*/
+ 
+   /* Initialize picture data */
++/*
+   options.picture_data.size = YAD_PICTURE_ORIG;
+   options.picture_data.inc = 5;
++*/
+ 
+   /* Initialize print data */
++/*
+   options.print_data.type = YAD_PRINT_TEXT;
+   options.print_data.headers = FALSE;
++*/
+ 
+   /* Initialize progress data */
+   options.progress_data.progress_text = NULL;
+@@ -1438,6 +1504,7 @@
+   options.progress_data.log_height = -1;
+ 
+   /* Initialize scale data */
++/*
+   options.scale_data.value = 0;
+   options.scale_data.min_value = 0;
+   options.scale_data.max_value = 100;
+@@ -1448,6 +1515,7 @@
+   options.scale_data.have_value = FALSE;
+   options.scale_data.invert = FALSE;
+   options.scale_data.marks = NULL;
++*/
+ 
+   /* Initialize text data */
+   options.text_data.fore = NULL;
+@@ -1488,28 +1556,36 @@
+   g_option_context_add_group (tmp_ctx, a_group);
+ 
+   /* Adds calendar option entries */
++/*
+   a_group = g_option_group_new ("calendar", _("Calendar options"), _("Show calendar options"), NULL, NULL);
+   g_option_group_add_entries (a_group, calendar_options);
+   g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+   g_option_context_add_group (tmp_ctx, a_group);
++*/
+ 
+   /* Adds color option entries */
++/*
+   a_group = g_option_group_new ("color", _("Color selection options"), _("Show color selection options"), NULL, NULL);
+   g_option_group_add_entries (a_group, color_options);
+   g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+   g_option_context_add_group (tmp_ctx, a_group);
++*/
+ 
+   /* Adds dnd option entries */
++/*
+   a_group = g_option_group_new ("dnd", _("DND options"), _("Show drag-n-drop options"), NULL, NULL);
+   g_option_group_add_entries (a_group, dnd_options);
+   g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+   g_option_context_add_group (tmp_ctx, a_group);
++*/
+ 
+   /* Adds entry option entries */
++/*
+   a_group = g_option_group_new ("entry", _("Text entry options"), _("Show text entry options"), NULL, NULL);
+   g_option_group_add_entries (a_group, entry_options);
+   g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+   g_option_context_add_group (tmp_ctx, a_group);
++*/
+ 
+   /* Adds file selection option entries */
+   a_group = g_option_group_new ("file", _("File selection options"), _("Show file selection options"), NULL, NULL);
+@@ -1518,10 +1594,12 @@
+   g_option_context_add_group (tmp_ctx, a_group);
+ 
+   /* Add font selection option entries */
++/*
+   a_group = g_option_group_new ("font", _("Font selection options"), _("Show font selection options"), NULL, NULL);
+   g_option_group_add_entries (a_group, font_options);
+   g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+   g_option_context_add_group (tmp_ctx, a_group);
++*/
+ 
+   /* Add form option entries */
+   a_group = g_option_group_new ("form", _("Form options"), _("Show form options"), NULL, NULL);
+@@ -1538,54 +1616,70 @@
+ #endif
+ 
+   /* Add icons option entries */
++/*
+   a_group = g_option_group_new ("icons", _("Icons box options"), _("Show icons box options"), NULL, NULL);
+   g_option_group_add_entries (a_group, icons_options);
+   g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+   g_option_context_add_group (tmp_ctx, a_group);
++*/
+ 
+   /* Adds list option entries */
++/*
+   a_group = g_option_group_new ("list", _("List options"), _("Show list options"), NULL, NULL);
+   g_option_group_add_entries (a_group, list_options);
+   g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+   g_option_context_add_group (tmp_ctx, a_group);
++*/
+ 
+   /* Adds multi progress option entries */
++/*
+   a_group = g_option_group_new ("multi-progress", _("Multi progress bars options"),
+                                 _("Show multi progress bars options"), NULL, NULL);
+   g_option_group_add_entries (a_group, multi_progress_options);
+   g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+   g_option_context_add_group (tmp_ctx, a_group);
++*/
+ 
+   /* Adds notebook option entries */
++/*
+   a_group = g_option_group_new ("notebook", _("Notebook options"), _("Show notebook dialog options"), NULL, NULL);
+   g_option_group_add_entries (a_group, notebook_options);
+   g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+   g_option_context_add_group (tmp_ctx, a_group);
++*/
+ 
+   /* Adds notification option entries */
++/*
+   a_group = g_option_group_new ("notification", _("Notification icon options"),
+                                 _("Show notification icon options"), NULL, NULL);
+   g_option_group_add_entries (a_group, notification_options);
+   g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+   g_option_context_add_group (tmp_ctx, a_group);
++*/
+ 
+   /* Adds paned option entries */
++/*
+   a_group = g_option_group_new ("paned", _("Paned dialog options"), _("Show paned dialog options"), NULL, NULL);
+   g_option_group_add_entries (a_group, paned_options);
+   g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+   g_option_context_add_group (tmp_ctx, a_group);
++*/
+ 
+   /* Adds picture option entries */
++/*
+   a_group = g_option_group_new ("picture", _("Picture dialog options"), _("Show picture dialog options"), NULL, NULL);
+   g_option_group_add_entries (a_group, picture_options);
+   g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+   g_option_context_add_group (tmp_ctx, a_group);
++*/
+ 
+   /* Adds print option entries */
++/*
+   a_group = g_option_group_new ("print", _("Print dialog options"), _("Show print dialog options"), NULL, NULL);
+   g_option_group_add_entries (a_group, print_options);
+   g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+   g_option_context_add_group (tmp_ctx, a_group);
++*/
+ 
+   /* Adds progress option entries */
+   a_group = g_option_group_new ("progress", _("Progress options"), _("Show progress options"), NULL, NULL);
+@@ -1594,10 +1688,12 @@
+   g_option_context_add_group (tmp_ctx, a_group);
+ 
+   /* Adds scale option entries */
++/*
+   a_group = g_option_group_new ("scale", _("Scale options"), _("Show scale options"), NULL, NULL);
+   g_option_group_add_entries (a_group, scale_options);
+   g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+   g_option_context_add_group (tmp_ctx, a_group);
++*/
+ 
+   /* Adds text option entries */
+   a_group = g_option_group_new ("text", _("Text information options"), _("Show text information options"), NULL, NULL);
