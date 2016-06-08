@@ -33,7 +33,7 @@ pointX=$(( ($screenwidth - $width) / 2 ))
 pointY=$(( ($screenheight - $height) / 2 ))
 
 test "$(uname -m)" = "x86_64" && arch="x86_64" || arch="x86"
-yad="./yad.$arch"
+yad="bin/yad.$arch"
 window_icon="./setup.png"
 
 error () {
@@ -65,10 +65,10 @@ selection="""$($yad \
 	--item-separator=',' \
 	--field="Application name" "" \
 	--field="Lowercase name;\nno spaces or special chars" "" \
-	--field="tarball with the files to install:FL" "" \
+	--field="tarball with the files to install:FL" "NULL" \
 	--field="Start-up command inside the directory" "" \
-	--field="License text:FL" "" \
-	--field="Icon:FL" "" \
+	--field="License text (optional):FL" "NULL" \
+	--field="Icon:FL" "NULL" \
 	--field="Category:CB" "Game,AudioVideo,Audio,Video,Development,Education,Graphics,Network,Office,Science,Settings,System,Utility" \
 	--field="Architecture:CB" "$arch_both,x86,x86_64" \
 	--field="Use embedded xz decompressor (xzminidec):CHK" \
@@ -78,7 +78,7 @@ selection="""$($yad \
 	--file-filter="text files (*.txt)|*.txt" \
 	--button="Generate installer" \
 	--button="Quit")"""
-[ $? -ne 0 ] && exit 1
+test $? -ne 0 && exit 1
 
 name="$(echo $selection | cut -d '|' -f1)"
 short="$(echo $selection | cut -d '|' -f2)"
@@ -90,14 +90,32 @@ category="$(echo $selection | cut -d '|' -f7)"
 arch="$(echo $selection | cut -d '|' -f8)"
 xzminidec="$(echo $selection | cut -d '|' -f9)"
 
-test "x$name" = "x" && error "empty name"
-test "x$short" = "x" && error "empty short name"
-test -f "$tarball" || error "selected tarball is not a file"
-test "x$command" = "x" && error "empty command"
-test -f "$license" || error "selected license is not a file"
-test -f "$icon" || error "selected icon is not a file"
+test -n "$name" || error "empty name"
+test -n "$short" || error "empty short name"
 
-command="$(echo "$command" | sed 's|^\.\/||')"
+if [ -z "$command" ]; then
+	error "empty command"
+else
+	command="$(echo "$command" | sed 's|^\.\/||')"
+fi
+
+if [ "$(basename "$tarball")" = "NULL" ]; then
+	error "no tarball selected"
+else
+	test -f "$tarball" || error "selected tarball is not a file"
+fi
+
+if [ "$(basename "$license")" = "NULL" ]; then
+	license=""
+else
+	test -f "$license" || error "selected license is not a file"
+fi
+
+if [ "$(basename "$icon")" = "NULL" ]; then
+	error "no icon selected"
+else
+	test -f "$icon" || error "selected icon is not a file"
+fi
 
 cat <<EOL
 name: $name
@@ -113,17 +131,21 @@ EOL
 tmpdir="$(mktemp -d)"
 
 cp -l "$tarball" $tmpdir
-cp "$license" $tmpdir/LICENSE
-bzip2 $tmpdir/LICENSE
+if [ -f "$license" ]; then
+	cp "$license" $tmpdir/LICENSE
+	bzip2 $tmpdir/LICENSE
+fi
 cp "$icon" $tmpdir/_icon
 cp setup.png $tmpdir
+
 if [ "x$arch" = "x$arch_both" ]; then
-	cp pv.x86 pv.x86_64 yad.x86 yad.x86_64 $tmpdir
-	test $xzminidec != FALSE && cp xzminidec.x86 xzminidec.x86_64 $tmpdir
+	cp bin/pv.x86 bin/pv.x86_64 bin/yad.x86 bin/yad.x86_64 $tmpdir
+	test $xzminidec = FALSE || cp bin/xzminidec.x86 bin/xzminidec.x86_64 $tmpdir
 else
-	cp pv.$arch yad.$arch $tmpdir
-	test $xzminidec != FALSE && cp xzminidec.$arch $tmpdir
+	cp bin/pv.$arch bin/yad.$arch $tmpdir
+	test $xzminidec = FALSE || cp bin/xzminidec.$arch $tmpdir
 fi
+
 sed -e '/^# /d; s|^##|#|g; s|^[ \t]*||; /^$/d' wizard.sh | \
 	sed -e :a -e '/\\$/N; s|\\\n||; ta' > $tmpdir/wizard.sh
 chmod 0775 $tmpdir/wizard.sh
@@ -139,7 +161,7 @@ xzminidec="$xzminidec"
 EOF
 test "x$arch" != "x$arch_both" && echo "arch=\"$arch\"" >> $tmpdir/settings
 
-if ./makeself.sh --header ./makeself-header --nocomp --nox11 $tmpdir ${short}_setup.sh "$name" ./wizard.sh; then
+if bin/makeself.sh --header bin/makeself-header --nocomp --nox11 $tmpdir ${short}_setup.sh "$name" ./wizard.sh; then
 	$yad --window-icon=$window_icon \
 			--center \
 			--width=$width \

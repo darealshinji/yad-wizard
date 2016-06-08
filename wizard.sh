@@ -164,19 +164,21 @@ fi
 
 
 # ##### License agreement ##### #
-bunzip2 LICENSE.bz2
-if ! $yad_l --title="License" \
-		--text-info \
-		--wrap \
-		--filename="./LICENSE" \
-		--button="Accept" \
-		--button="Decline"
-then
-	exit 1
+if [ -f "LICENSE.bz2" ]; then
+	bunzip2 "LICENSE.bz2"
+	if ! $yad_l --title="License" \
+			--text-info \
+			--filename="./LICENSE" \
+			--button="Accept" \
+			--button="Decline"
+	then
+		exit 1
+	fi
 fi
 
 
 # ##### Installation ##### #
+exec_perm=0775
 appdir="$path/app"
 localapps="$HOME/.local/share/applications"
 desktop_entry="${app_lower}-$(mktemp -u XXXXXXXX).desktop"
@@ -193,7 +195,7 @@ case "$(printf "$tarball" | tail -c3)" in
 		decompress="$unxz"
 	;;
 	tbz|bz2)
-		decompress="bunzip"
+		decompress="bunzip2"
 	;;
 	tgz|.gz)
 		decompress="gunzip"
@@ -249,7 +251,8 @@ if [ "x$(tail -n1 $log)" != "x100" ]; then
 fi
 
 # if the app directory contains nothing but a single subdirectory,
-# move the subdirectory's content into the app directory
+# rename the subdirectory to something random, move its content into the
+# app directory and delete the now empty subdirectory
 if [ "x$(ls -1A "$appdir" | wc -l)" = "x1" ] && \
    [ -d "$appdir/$(ls -1A "$appdir")" ];
 then
@@ -269,7 +272,7 @@ Categories=$categories
 StartupNotify=true
 Icon=$path/.icon
 EOF
-chmod 0755 "$path/$desktop_entry"
+chmod $exec_perm "$path/$desktop_entry"
 
 # copy icons
 cp "$scriptdir/$app_icon" "$path/.icon"
@@ -283,7 +286,7 @@ fi
 
 # launcher on user desktop
 if [ "x$with_launcher" = "xyes" ]; then
-	test -w "$desktop" && install -m 0755 "$path/$desktop_entry" "$desktop/$desktop_entry"
+	test -w "$desktop" && install -m $exec_perm "$path/$desktop_entry" "$desktop/$desktop_entry"
 fi
 
 # generate uninstall script
@@ -302,7 +305,7 @@ then
 fi
 exit 0
 EOF
-chmod 0755 "$path/uninstall.sh"
+chmod $exec_perm "$path/uninstall.sh"
 
 cp -f ./$yad_bin "$path/.uninstall"
 rm -f $log $pv_tmp $yad_tmp
