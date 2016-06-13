@@ -132,7 +132,7 @@ tmpdir="$(mktemp -d)"
 
 cp -l "$tarball" $tmpdir
 if [ -f "$license" ]; then
-	cp "$license" $tmpdir/LICENSE
+	cat "$license" components > $tmpdir/LICENSE
 	bzip2 $tmpdir/LICENSE
 fi
 cp "$icon" $tmpdir/_icon
