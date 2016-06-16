@@ -20,7 +20,6 @@ export LDFLAGS="-Wl,-z,defs -Wl,-z,norelro -Wl,--gc-sections -Wl,--as-needed"
 
 make clean
 make -j4 V=1
-strip --strip-all --remove-section=.comment --remove-section=.note pv
 cp -f pv ../pv.$target
 
 cd ..
