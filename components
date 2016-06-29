@@ -11,13 +11,13 @@ License: MIT - https://opensource.org/licenses/MIT
 Homepage/Source: https://github.com/darealshinji/yad-wizard
 
 
-Setup icon
-Copyright:
- Alfredo K. Kojima <kojima@conectiva.com.br>
- Michael Vogt <mvo@debian.org>
-License: GPL 2.0+ - http://www.gnu.org/licenses/gpl-2.0.html
-Homepage: http://www.nongnu.org/synaptic/
-Source: http://bazaar.launchpad.net/~synaptic-developers/synaptic/trunk/download/head:/synaptic.png-20060222184633-f2b434dacf5eb174/synaptic.png
+YAD ("Yet Another Dialog")
+Version: 0.36.3
+Copyright: 2008-2016 Victor Ananjevsky <ananasik@gmail.com>
+License: GPL 3.0+ - http://www.gnu.org/licenses/gpl-3.0.html
+Homepage: https://sourceforge.net/projects/yad-dialog/
+Source: https://downloads.sourceforge.net/project/yad-dialog/yad-0.36.3.tar.xz
+Patches: https://github.com/darealshinji/yad-wizard
 
 
 Makeself
@@ -38,12 +38,23 @@ Homepage: http://www.ivarch.com/programs/pv
 Source: http://www.ivarch.com/programs/sources/pv-1.6.0.tar.gz
 
 
-YAD ("Yet Another Dialog")
-Version: 0.36.3
-Copyright: 2008-2016 Victor Ananjevsky <ananasik@gmail.com>
-License: GPL 3.0+ - http://www.gnu.org/licenses/gpl-3.0.html
-Homepage: https://sourceforge.net/projects/yad-dialog/
-Sources:
-  https://downloads.sourceforge.net/project/yad-dialog/yad-0.36.3.tar.xz
-  https://github.com/darealshinji/yad-wizard/blob/402e7d492875d075cad808cff476d40d9966d046/yad-small-patch.diff
+xzminidec ("XZ Embedded")
+Version: git (18-ge75f4eb)
+Copyright: none
+License: Public Domain
+  All the files in this package have been written by Lasse Collin
+  and/or Igor Pavlov. All these files have been put into the
+  public domain. You can do whatever you want with these files.
+  As usual, this software is provided "as is", without any warranty.
+Homepage: http://tukaani.org/xz/embedded.html
+Source: http://git.tukaani.org/xz-embedded.git
+
+
+Setup icon
+Copyright:
+ Alfredo K. Kojima <kojima@conectiva.com.br>
+ Michael Vogt <mvo@debian.org>
+License: GPL 2.0+ - http://www.gnu.org/licenses/gpl-2.0.html
+Homepage: http://www.nongnu.org/synaptic/
+Source: http://bazaar.launchpad.net/~synaptic-developers/synaptic/trunk/download/head:/synaptic.png-20060222184633-f2b434dacf5eb174/synaptic.png
 
