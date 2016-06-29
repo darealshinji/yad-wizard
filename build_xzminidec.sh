@@ -7,7 +7,12 @@ else
 fi
 
 dir="xz-embedded"
-test -d $dir || git clone http://git.tukaani.org/xz-embedded.git
+test -d $dir || {
+  git clone "http://git.tukaani.org/xz-embedded.git"
+  tag="$(git -C $dir describe --tags)"
+  rm -rf $dir/.git
+  tar cfJ xzminidec-${tag}.tar.xz $dir
+}
 
 CFLAGS="-Os -Wformat -Werror=format-security -fno-stack-protector -fno-strict-aliasing -ffunction-sections -fdata-sections -D_FORTIFY_SOURCE=2"
 LDFLAGS="-Wl,-z,defs -Wl,-z,norelro -Wl,--gc-sections -Wl,--as-needed"

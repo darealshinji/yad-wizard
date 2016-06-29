@@ -60,7 +60,7 @@
  #endif
 -                                       "Using GTK+ %d.%d.%d\n"),
 +                                       "Using GTK+ %d.%d.%d\n"
-+                                       "with patches: https://tinyurl.com/yadpatch\n"),
++                                       "\nWith patches applied:\nhttps://github.com/darealshinji/yad-wizard\n"),
                                       gtk_major_version, gtk_minor_version, gtk_micro_version);
  
    dialog = gtk_about_dialog_new ();

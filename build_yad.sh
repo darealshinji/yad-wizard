@@ -6,10 +6,12 @@ else
   target="x86"
 fi
 
-rev=987
-dir="yad-trunk"
+ver="0.36.3"
+dir="yad-$ver"
+txz="${dir}.tar.xz"
 rm -rf $dir
-svn checkout -r $rev "svn://svn.code.sf.net/p/yad-dialog/code/trunk" $dir
+test -f $txz || wget "https://downloads.sourceforge.net/project/yad-dialog/$txz"
+tar xf $txz
 
 cd $dir
 patch -p1 < ../yad-small-patch.diff
