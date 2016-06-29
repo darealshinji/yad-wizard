@@ -4,7 +4,7 @@
  
  IT_PROG_INTLTOOL([0.40.0])
  
-+#source code: https://sourceforge.net/p/yad-dialog/code/987/tree/trunk/
++#source code: https://downloads.sourceforge.net/project/yad-dialog/yad-0.36.3.tar.xz
 +CFLAGS=""
 +CXXFLAGS=""
  AC_PROG_CC
@@ -60,7 +60,7 @@
  #endif
 -                                       "Using GTK+ %d.%d.%d\n"),
 +                                       "Using GTK+ %d.%d.%d\n"
-+                                       "\nSVN r987 (v0.36.3) with patches:\nhttps://tinyurl.com/yadpatch\n"),
++                                       "with patches: https://tinyurl.com/yadpatch\n"),
                                       gtk_major_version, gtk_minor_version, gtk_micro_version);
  
    dialog = gtk_about_dialog_new ();
