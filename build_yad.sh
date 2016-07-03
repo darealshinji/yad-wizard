@@ -28,4 +28,5 @@ cd ..
 rm -f sstrip && gcc -s -W -Wall -Wextra -O2 -o sstrip sstrip.c
 ./sstrip -z yad.$target
 upx --best yad.$target
+mv yad.$target bin
 

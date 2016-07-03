@@ -26,4 +26,5 @@ cd ..
 rm -f sstrip && gcc -s -W -Wall -Wextra -O2 -o sstrip sstrip.c
 ./sstrip -z pv.$target
 upx --best pv.$target
+mv pv.$target bin
 

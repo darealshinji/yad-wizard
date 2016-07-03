@@ -26,4 +26,5 @@ cp -f $dir/userspace/xzminidec xzminidec.$target
 rm -f sstrip && gcc -s -W -Wall -Wextra -O2 -o sstrip sstrip.c
 ./sstrip -z xzminidec.$target
 upx --best xzminidec.$target
+mv xzminidec.$target bin
 
