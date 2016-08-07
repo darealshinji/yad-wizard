@@ -14,7 +14,8 @@ test -f $txz || wget "https://downloads.sourceforge.net/project/yad-dialog/$txz"
 tar xf $txz
 
 cd $dir
-patch -p1 < ../yad-small-patch.diff
+patch -p1 < ../yad-patch-1.diff
+patch -p1 < ../yad-patch-2.diff
 autoreconf -if
 XCFLAGS="-Os -Wformat -Werror=format-security -fno-stack-protector -fno-strict-aliasing -ffunction-sections -fdata-sections -D_FORTIFY_SOURCE=2"
 XLDFLAGS="-Wl,-z,defs -Wl,-z,norelro -Wl,--gc-sections -Wl,--as-needed"

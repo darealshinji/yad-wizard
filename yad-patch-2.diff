@@ -1,0 +1,63 @@
+Other patches.
+
+diff --git a/src/about.c b/src/about.c
+index 827334e..2357a28 100644
+--- a/src/about.c
++++ b/src/about.c
+@@ -52,7 +52,8 @@ yad_about (void)
+ #ifdef HAVE_SPELL
+                                        "Built with GtkSpell\n"
+ #endif
+-                                       "Using GTK+ %d.%d.%d\n"),
++                                       "Using GTK+ %d.%d.%d\n"
++                                       "\nWith patches applied from:\nhttps://github.com/darealshinji/yad-wizard\n"),
+                                      gtk_major_version, gtk_minor_version, gtk_micro_version);
+ 
+   dialog = gtk_about_dialog_new ();
+diff --git a/src/form.c b/src/form.c
+index 4fac0f9..4c64a8f 100644
+--- a/src/form.c
++++ b/src/form.c
+@@ -1013,7 +1013,7 @@ form_create_widget (GtkWidget * dlg)
+               gtk_widget_set_name (e, "yad-form-button");
+               gtk_button_set_alignment (GTK_BUTTON (e), 0.5, 0.5);
+               if (fld->type == YAD_FIELD_BUTTON)
+-                gtk_button_set_relief (GTK_BUTTON (e), GTK_RELIEF_NONE);
++                gtk_button_set_relief (GTK_BUTTON (e), GTK_RELIEF_HALF);
+ #if !GTK_CHECK_VERSION(3,0,0)
+               gtk_table_attach (GTK_TABLE (tbl), e, col * 2, 2 + col * 2, row, row + 1, GTK_EXPAND | GTK_FILL, 0, 5, 5);
+ #else
+diff --git a/src/option.c b/src/option.c
+index 2b37366..ad4d2bc 100644
+--- a/src/option.c
++++ b/src/option.c
+@@ -314,7 +314,12 @@ static GOptionEntry form_options[] = {
+   { "form", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &form_mode,
+     N_("Display form dialog"), NULL },
+   { "field", 0, 0, G_OPTION_ARG_CALLBACK, add_field,
+-    N_ ("Add field to form (see man page for list of possible types)"), N_("LABEL[:TYPE]") },
++    N_ ("Add field to form (TYPE may be:\n"
++        "                                                 "
++        " H RO NUM CHK CB CBE CE FL SFL DIR CDIR\n"
++        "                                                 "
++        " FN MFL MDIR DT SCL CLR BTN FBTN LBL TXT)"),
++    N_("LABEL[:TYPE]") },
+   { "align", 0, G_OPTION_FLAG_NOALIAS, G_OPTION_ARG_CALLBACK, set_align,
+     N_("Set alignment of filed labels (left, center or right)"), N_("TYPE") },
+   { "columns", 0, 0, G_OPTION_ARG_INT, &options.form_data.columns,
+diff --git a/src/util.c b/src/util.c
+index 6fb6e71..1e9834b 100644
+--- a/src/util.c
++++ b/src/util.c
+@@ -199,9 +199,9 @@ get_color (GdkColor *c, guint64 alpha)
+       if (options.color_data.alpha)
+         {
+           if (options.color_data.extra)
+-            res = g_strdup_printf ("#%s%hx", cs + 1, alpha);
++            res = g_strdup_printf ("#%s%hx", cs + 1, (int)alpha);
+           else
+-            res = g_strdup_printf ("#%c%c%c%c%c%c%hx", cs[1], cs[2], cs[5], cs[6], cs[9], cs[10], alpha / 256);
++            res = g_strdup_printf ("#%c%c%c%c%c%c%hx", cs[1], cs[2], cs[5], cs[6], cs[9], cs[10], (int)(alpha / 256));
+         }
+       else
+         {
