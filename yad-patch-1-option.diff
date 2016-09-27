@@ -1,0 +1,817 @@
+diff --git a/src/option.c b/src/option.c
+index 7c661cc..d411f28 100644
+--- a/src/option.c
++++ b/src/option.c
+@@ -23,26 +23,14 @@
+ 
+ static gboolean add_button (const gchar *, const gchar *, gpointer, GError **);
+ static gboolean set_text_align (const gchar *, const gchar *, gpointer, GError **);
+-static gboolean add_column (const gchar *, const gchar *, gpointer, GError **);
+ static gboolean add_field (const gchar *, const gchar *, gpointer, GError **);
+-static gboolean add_bar (const gchar *, const gchar *, gpointer, GError **);
+-static gboolean add_tab (const gchar *, const gchar *, gpointer, GError **);
+-static gboolean add_scale_mark (const gchar *, const gchar *, gpointer, GError **);
+-static gboolean add_palette (const gchar *, const gchar *, gpointer, GError **);
+ static gboolean add_confirm_overwrite (const gchar *, const gchar *, gpointer, GError **);
+ static gboolean add_file_filter (const gchar *, const gchar *, gpointer, GError **);
+-static gboolean set_color_mode (const gchar *, const gchar *, gpointer, GError **);
+ static gboolean set_buttons_layout (const gchar *, const gchar *, gpointer, GError **);
+ static gboolean set_align (const gchar *, const gchar *, gpointer, GError **);
+ static gboolean set_justify (const gchar *, const gchar *, gpointer, GError **);
+-static gboolean set_tab_pos (const gchar *, const gchar *, gpointer, GError **);
+-static gboolean set_scale_value (const gchar *, const gchar *, gpointer, GError **);
+-static gboolean set_ellipsize (const gchar *, const gchar *, gpointer, GError **);
+ static gboolean set_expander (const gchar *, const gchar *, gpointer, GError **);
+-static gboolean set_orient (const gchar *, const gchar *, gpointer, GError **);
+-static gboolean set_print_type (const gchar *, const gchar *, gpointer, GError **);
+ static gboolean set_progress_log (const gchar *, const gchar *, gpointer, GError **);
+-static gboolean set_size (const gchar *, const gchar *, gpointer, GError **);
+ static gboolean set_posx (const gchar *, const gchar *, gpointer, GError **);
+ static gboolean set_posy (const gchar *, const gchar *, gpointer, GError **);
+ #ifndef G_OS_WIN32
+@@ -208,74 +196,6 @@ static GOptionEntry common_options[] = {
+   { NULL }
+ };
+ 
+-static GOptionEntry calendar_options[] = {
+-  { "calendar", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &calendar_mode,
+-    N_("Display calendar dialog"), NULL },
+-  { "day", 0, 0, G_OPTION_ARG_INT, &options.calendar_data.day,
+-    N_("Set the calendar day"), N_("DAY") },
+-  { "month", 0, 0, G_OPTION_ARG_INT, &options.calendar_data.month,
+-    N_("Set the calendar month"), N_("MONTH") },
+-  { "year", 0, 0, G_OPTION_ARG_INT, &options.calendar_data.year,
+-    N_("Set the calendar year"), N_("YEAR") },
+-  { "details", 0, 0, G_OPTION_ARG_FILENAME, &options.calendar_data.details,
+-    N_("Set the filename with dates details"), N_("FILENAME") },
+-  { NULL }
+-};
+-
+-static GOptionEntry color_options[] = {
+-  { "color", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &color_mode,
+-    N_("Display color selection dialog"), NULL },
+-  { "color-selection", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &color_mode,
+-    N_("Alias for --color"), NULL },
+-  { "init-color", 0, 0, G_OPTION_ARG_STRING, &options.color_data.init_color,
+-    N_("Set initial color value"), N_("COLOR") },
+-  { "gtk-palette", 0, 0, G_OPTION_ARG_NONE, &options.color_data.gtk_palette,
+-    N_("Show system palette in color dialog"), NULL },
+-  { "palette", 0, G_OPTION_FLAG_OPTIONAL_ARG, G_OPTION_ARG_CALLBACK, add_palette,
+-    N_("Set path to palette file. Default - " RGB_FILE), N_("FILENAME") },
+-  { "expand-palette", 0, 0, G_OPTION_ARG_NONE, &options.color_data.expand_palette,
+-    N_("Expand user palette"), NULL },
+-  { "mode", 0, 0, G_OPTION_ARG_CALLBACK, set_color_mode,
+-    N_("Set output mode to MODE. Values are hex (default) or rgb"), N_("MODE") },
+-  { "extra", 0, 0, G_OPTION_ARG_NONE, &options.color_data.extra,
+-    N_("Use #rrrrggggbbbb format instead of #rrggbb"), NULL },
+-  { "alpha", 0, 0, G_OPTION_ARG_NONE, &options.color_data.alpha,
+-    N_("Add opacity to output color value"), NULL },
+-  { NULL }
+-};
+-
+-static GOptionEntry dnd_options[] = {
+-  { "dnd", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &dnd_mode,
+-    N_("Display drag-n-drop box"), NULL },
+-  { "tooltip", 0, 0, G_OPTION_ARG_NONE, &options.dnd_data.tooltip,
+-    N_("Use dialog text as tooltip"), NULL },
+-  { NULL }
+-};
+-
+-static GOptionEntry entry_options[] = {
+-  { "entry", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &entry_mode,
+-    N_("Display text entry or combo-box dialog"), NULL },
+-  { "entry-label", 0, 0, G_OPTION_ARG_STRING, &options.entry_data.entry_label,
+-    N_("Set the entry label"), N_("TEXT") },
+-  { "entry-text", 0, 0, G_OPTION_ARG_STRING, &options.entry_data.entry_text,
+-    N_("Set the entry text"), N_("TEXT") },
+-  { "hide-text", 0, 0, G_OPTION_ARG_NONE, &options.entry_data.hide_text,
+-    N_("Hide the entry text"), N_("TEXT") },
+-  { "completion", 0, 0, G_OPTION_ARG_NONE, &options.entry_data.completion,
+-    N_("Use completion instead of combo-box"), NULL },
+-  { "numeric", 0, 0, G_OPTION_ARG_NONE, &options.entry_data.numeric,
+-    N_("Use spin button for text entry"), NULL },
+-  { "licon", 0, 0, G_OPTION_ARG_FILENAME, &options.entry_data.licon,
+-    N_("Set the left entry icon"), N_("IMAGE") },
+-  { "licon-action", 0, 0, G_OPTION_ARG_STRING, &options.entry_data.licon_action,
+-    N_("Set the left entry icon action"), N_("CMD") },
+-  { "ricon", 0, 0, G_OPTION_ARG_FILENAME, &options.entry_data.ricon,
+-    N_("Set the right entry icon"), N_("IMAGE") },
+-  { "ricon-action", 0, 0, G_OPTION_ARG_STRING, &options.entry_data.ricon_action,
+-    N_("Set the right entry icon action"), N_("CMD") },
+-  { NULL }
+-};
+-
+ static GOptionEntry file_options[] = {
+   { "file", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &file_mode,
+     N_("Display file selection dialog"), NULL },
+@@ -290,18 +210,6 @@ static GOptionEntry file_options[] = {
+   { NULL }
+ };
+ 
+-static GOptionEntry font_options[] = {
+-  { "font", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &font_mode,
+-    N_("Display font selection dialog"), NULL },
+-  { "font-selection", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &font_mode,
+-    N_("Alias for --font"), NULL },
+-  { "preview", 0, 0, G_OPTION_ARG_STRING, &options.font_data.preview,
+-    N_("Set text string for preview"), N_("TEXT") },
+-  { "separate-output", 0, 0, G_OPTION_ARG_NONE, &options.font_data.separate_output,
+-    N_("Separate output of font description"), NULL },
+-  { NULL }
+-};
+-
+ static GOptionEntry form_options[] = {
+   { "form", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &form_mode,
+     N_("Display form dialog"), NULL },
+@@ -340,162 +248,6 @@ static GOptionEntry html_options[] = {
+ };
+ #endif
+ 
+-static GOptionEntry icons_options[] = {
+-  { "icons", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &icons_mode,
+-    N_("Display icons box dialog"), NULL },
+-  { "read-dir", 0, 0, G_OPTION_ARG_STRING, &options.icons_data.directory,
+-    N_("Read data from .desktop files in specified directory"), N_("DIR") },
+-  { "compact", 0, 0, G_OPTION_ARG_NONE, &options.icons_data.compact,
+-    N_("Use compact (list) view"), NULL },
+-  { "generic", 0, 0, G_OPTION_ARG_NONE, &options.icons_data.generic,
+-    N_("Use GenericName field instead of Name for icon label"), NULL },
+-  { "item-width", 0, 0, G_OPTION_ARG_INT, &options.icons_data.width,
+-    N_("Set the width of dialog items"), NULL },
+-  { "term", 0, 0, G_OPTION_ARG_STRING, &options.icons_data.term,
+-    /* xgettext: no-c-format */
+-    N_("Use specified pattern for launch command in terminal (default: xterm -e %s)"), N_("PATTERN") },
+-  { "sort-by-name", 0, 0, G_OPTION_ARG_NONE, &options.icons_data.sort_by_name,
+-    N_("Sort items by name instead of filename"), NULL },
+-  { "descend", 0, 0, G_OPTION_ARG_NONE, &options.icons_data.descend,
+-    N_("Sort items in descending order"), NULL },
+-  { "single-click", 0, 0, G_OPTION_ARG_NONE, &options.icons_data.single_click,
+-    N_("Activate items by single click"), NULL },
+-#ifdef HAVE_GIO
+-  { "monitor", 0, 0, G_OPTION_ARG_NONE, &options.icons_data.monitor,
+-    N_("Watch fot changes in directory"), NULL },
+-#endif
+-  { NULL }
+-};
+-
+-static GOptionEntry list_options[] = {
+-  { "list", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &list_mode,
+-    N_("Display list dialog"), NULL },
+-  { "column", 0, 0, G_OPTION_ARG_CALLBACK, add_column,
+-    N_("Set the column header (see man page for list of possible types)"), N_("COLUMN[:TYPE]") },
+-  { "checklist", 0, 0, G_OPTION_ARG_NONE, &options.list_data.checkbox,
+-    N_("Use checkboxes for first column"), NULL },
+-  { "radiolist", 0, 0, G_OPTION_ARG_NONE, &options.list_data.radiobox,
+-    N_("Use radioboxes for first column"), NULL },
+-  { "no-headers", 0, 0, G_OPTION_ARG_NONE, &options.list_data.no_headers,
+-    N_("Don't show column headers"), NULL },
+-  { "no-click", 0, G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &options.list_data.clickable,
+-    N_("Disable clickable column headers"), NULL },
+-  { "no-rules-hint", 0, G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &options.list_data.rules_hint,
+-    N_("Disable rules hints"), NULL },
+-  { "grid-lines", 0, 0, G_OPTION_ARG_CALLBACK, set_grid_lines,
+-    N_("Set grid lines (hor[izontal], vert[ical] or both)"), N_("TYPE") },
+-  { "print-all", 0, 0, G_OPTION_ARG_NONE, &options.list_data.print_all,
+-    N_("Print all data from list"), NULL },
+-  { "editable-cols", 0, 0, G_OPTION_ARG_STRING, &options.list_data.editable_cols,
+-    N_("Set the list of editable columns"), N_("LIST") },
+-  { "wrap-width", 0, 0, G_OPTION_ARG_INT, &options.list_data.wrap_width,
+-    N_("Set the width of a column for start wrapping text"), N_("NUMBER") },
+-  { "wrap-cols", 0, 0, G_OPTION_ARG_STRING, &options.list_data.wrap_cols,
+-    N_("Set the list of wrapped columns"), N_("LIST") },
+-  { "ellipsize", 0, 0, G_OPTION_ARG_CALLBACK, set_ellipsize,
+-    N_("Set ellipsize mode for text columns (none, start, middle or end)"), N_("TYPE") },
+-  { "ellipsize-cols", 0, 0, G_OPTION_ARG_STRING, &options.list_data.ellipsize_cols,
+-    N_("Set the list of ellipsized columns"), N_("LIST") },
+-  { "print-column", 0, 0, G_OPTION_ARG_INT, &options.list_data.print_column,
+-    N_("Print a specific column. By default or if 0 is specified will be printed all columns"), N_("NUMBER") },
+-  { "hide-column", 0, 0, G_OPTION_ARG_INT, &options.list_data.hide_column,
+-    N_("Hide a specific column"), N_("NUMBER") },
+-  { "expand-column", 0, 0, G_OPTION_ARG_INT, &options.list_data.expand_column,
+-    N_("Set the column expandable by default. 0 sets all columns expandable"), N_("NUMBER") },
+-  { "search-column", 0, 0, G_OPTION_ARG_INT, &options.list_data.search_column,
+-    N_("Set the quick search column. Default is first column. Set it to 0 for disable searching"), N_("NUMBER") },
+-  { "tooltip-column", 0, 0, G_OPTION_ARG_INT, &options.list_data.tooltip_column,
+-    N_("Set the tooltip column"), N_("NUMBER") },
+-  { "sep-column", 0, 0, G_OPTION_ARG_INT, &options.list_data.sep_column,
+-    N_("Set the row separator column"), N_("NUMBER") },
+-  { "sep-value", 0, 0, G_OPTION_ARG_STRING, &options.list_data.sep_value,
+-    N_("Set the row separator value"), N_("TEXT") },
+-  { "limit", 0, 0, G_OPTION_ARG_INT, &options.list_data.limit,
+-    N_("Set the limit of rows in list"), N_("NUMBER") },
+-  { "dclick-action", 0, 0, G_OPTION_ARG_STRING, &options.list_data.dclick_action,
+-    N_("Set double-click action"), N_("CMD") },
+-  { "select-action", 0, 0, G_OPTION_ARG_STRING, &options.list_data.select_action,
+-    N_("Set select action"), N_("CMD") },
+-  { "regex-search", 0, 0, G_OPTION_ARG_NONE, &options.list_data.regex_search,
+-    N_("Use regex in search"), NULL },
+-  { "no-selection", 0, 0, G_OPTION_ARG_NONE, &options.list_data.no_selection,
+-    N_("Disable selection"), NULL },
+-  { NULL }
+-};
+-
+-static GOptionEntry multi_progress_options[] = {
+-  { "multi-progress", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &multi_progress_mode,
+-    N_("Display multi progress bars dialog"), NULL },
+-  { "bar", 0, 0, G_OPTION_ARG_CALLBACK, add_bar,
+-    N_("Add the progress bar (norm, rtl, pulse or perm)"), N_("LABEL[:TYPE]") },
+-  { "watch-bar", 0, 0, G_OPTION_ARG_INT, &options.multi_progress_data.watch_bar,
+-    N_("Watch for specific bar for auto close"), N_("NUMBER") },
+-  { "align", 0, G_OPTION_FLAG_NOALIAS, G_OPTION_ARG_CALLBACK, set_align,
+-    N_("Set alignment of bar labels (left, center or right)"), N_("TYPE") },
+-  { "auto-close", 0, G_OPTION_FLAG_NOALIAS, G_OPTION_ARG_NONE, &options.progress_data.autoclose,
+-    /* xgettext: no-c-format */
+-    N_("Dismiss the dialog when 100% of all bars has been reached"), NULL },
+-#ifndef G_OS_WIN32
+-  { "auto-kill", 0, G_OPTION_FLAG_NOALIAS, G_OPTION_ARG_NONE, &options.progress_data.autokill,
+-    N_("Kill parent process if cancel button is pressed"), NULL },
+-#endif
+-  { NULL }
+-};
+-
+-static GOptionEntry notebook_options[] = {
+-  { "notebook", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &notebook_mode,
+-    N_("Display notebook dialog"), NULL },
+-  { "tab", 0, 0, G_OPTION_ARG_CALLBACK, add_tab,
+-    N_("Add a tab to notebook"), N_("LABEL") },
+-  { "tab-pos", 0, G_OPTION_FLAG_NOALIAS, G_OPTION_ARG_CALLBACK, set_tab_pos,
+-    N_("Set position of a notebook tabs (top, bottom, left or right)"), N_("TYPE") },
+-  { "tab-borders", 0, 0, G_OPTION_ARG_INT, &options.notebook_data.borders,
+-    N_("Set tab borders"), N_("NUMBER") },
+-  { NULL }
+-};
+-
+-static GOptionEntry notification_options[] = {
+-  { "notification", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &notification_mode,
+-    N_("Display notification"), NULL },
+-  { "menu", 0, 0, G_OPTION_ARG_STRING, &options.notification_data.menu,
+-    N_("Set initial popup menu"), N_("STRING") },
+-  { "no-middle", 0, G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE, &options.notification_data.middle,
+-    N_("Disable exit on middle click"), NULL },
+-  { "hidden", 0, 0, G_OPTION_ARG_NONE, &options.notification_data.hidden,
+-    N_("Doesn't show icon at startup"), NULL },
+-  { NULL }
+-};
+-
+-static GOptionEntry paned_options[] = {
+-  { "paned", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &paned_mode,
+-    N_("Display paned dialog"), NULL },
+-  { "orient", 0, 0, G_OPTION_ARG_CALLBACK, set_orient,
+-    N_("Set orientation (hor[izontal] or vert[ical])"), N_("TYPE") },
+-  { "splitter", 0, 0, G_OPTION_ARG_INT, &options.paned_data.splitter,
+-    N_("Set initial splitter position"), N_("POS") },
+-  { NULL }
+-};
+-
+-static GOptionEntry picture_options[] = {
+-  { "picture", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &picture_mode,
+-    N_("Display picture dialog"), NULL },
+-  { "size", 0, 0, G_OPTION_ARG_CALLBACK, set_size,
+-    N_("Set initial size (fit or orig)"), N_("TYPE") },
+-  { "inc", 0, 0, G_OPTION_ARG_INT, &options.picture_data.inc,
+-    N_("Set increment for picture scaling (default - 5)"), N_("NUMBER") },
+-  { NULL }
+-};
+-
+-static GOptionEntry print_options[] = {
+-  { "print", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &print_mode,
+-    N_("Display printing dialog"), NULL },
+-  { "type", 0, 0, G_OPTION_ARG_CALLBACK, set_print_type,
+-    N_("Set source type (text, image or raw)"), N_("TYPE") },
+-  { "headers", 0, 0, G_OPTION_ARG_NONE, &options.print_data.headers,
+-    N_("Add headers to page"), NULL },
+-  { NULL }
+-};
+-
+ static GOptionEntry progress_options[] = {
+   { "progress", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &progress_mode,
+     N_("Display progress indication dialog"), NULL },
+@@ -525,30 +277,6 @@ static GOptionEntry progress_options[] = {
+   { NULL }
+ };
+ 
+-static GOptionEntry scale_options[] = {
+-  { "scale", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &scale_mode,
+-    N_("Display scale dialog"), NULL },
+-  { "value", 0, 0, G_OPTION_ARG_CALLBACK, set_scale_value,
+-    N_("Set initial value"), N_("VALUE") },
+-  { "min-value", 0, 0, G_OPTION_ARG_INT, &options.scale_data.min_value,
+-    N_("Set minimum value"), N_("VALUE") },
+-  { "max-value", 0, 0, G_OPTION_ARG_INT, &options.scale_data.max_value,
+-    N_("Set maximum value"), N_("VALUE") },
+-  { "step", 0, 0, G_OPTION_ARG_INT, &options.scale_data.step,
+-    N_("Set step size"), N_("VALUE") },
+-  { "page", 0, 0, G_OPTION_ARG_INT, &options.scale_data.page,
+-    N_("Set paging size"), N_("VALUE") },
+-  { "print-partial", 0, 0, G_OPTION_ARG_NONE, &options.scale_data.print_partial,
+-    N_("Print partial values"), NULL },
+-  { "hide-value", 0, 0, G_OPTION_ARG_NONE, &options.scale_data.hide_value,
+-    N_("Hide value"), NULL },
+-  { "invert", 0, 0, G_OPTION_ARG_NONE, &options.scale_data.invert,
+-    N_("Invert direction"), NULL },
+-  { "mark", 0, 0, G_OPTION_ARG_CALLBACK, add_scale_mark,
+-    N_("Add mark to scale (may be used multiple times)"), N_("NAME:VALUE") },
+-  { NULL }
+-};
+-
+ static GOptionEntry text_options[] = {
+   { "text-info", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &text_mode,
+     N_("Display text information dialog"), NULL },
+@@ -765,74 +470,6 @@ add_field (const gchar * option_name, const gchar * value, gpointer data, GError
+ }
+ 
+ static gboolean
+-add_bar (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+-{
+-  YadProgressBar *bar;
+-  gchar **bstr = split_arg (value);
+-
+-  bar = g_new0 (YadProgressBar, 1);
+-  bar->name = g_strdup (bstr[0]);
+-  if (bstr[1])
+-    {
+-      if (strcasecmp (bstr[1], "RTL") == 0)
+-        bar->type = YAD_PROGRESS_RTL;
+-      else if (strcasecmp (bstr[1], "PULSE") == 0)
+-        bar->type = YAD_PROGRESS_PULSE;
+-      else if (strcasecmp (bstr[1], "PERM") == 0)
+-        bar->type = YAD_PROGRESS_PERM;
+-      else
+-        bar->type = YAD_PROGRESS_NORMAL;
+-    }
+-  else
+-    bar->type = YAD_PROGRESS_NORMAL;
+-  options.multi_progress_data.bars = g_slist_append (options.multi_progress_data.bars, bar);
+-
+-  g_strfreev (bstr);
+-  return TRUE;
+-}
+-
+-static gboolean
+-add_tab (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+-{
+-  options.notebook_data.tabs = g_slist_append (options.notebook_data.tabs, g_strdup (value));
+-  return TRUE;
+-}
+-
+-static gboolean
+-add_scale_mark (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+-{
+-  YadScaleMark *mark;
+-  gchar **mstr = split_arg (value);
+-
+-  mark = g_new0 (YadScaleMark, 1);
+-  mark->name = g_strdup (mstr[0]);
+-  if (mstr[1])
+-    {
+-      mark->value = g_ascii_strtoll (mstr[1], NULL, 10);
+-      options.scale_data.marks = g_slist_append (options.scale_data.marks, mark);
+-    }
+-  else
+-    {
+-      g_printerr (_("Mark %s doesn't have a value\n"), mark->name);
+-      g_free (mark->name);
+-      g_free (mark);
+-    }
+-
+-  g_strfreev (mstr);
+-  return TRUE;
+-}
+-
+-static gboolean
+-add_palette (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+-{
+-  options.color_data.use_palette = TRUE;
+-  if (value)
+-    options.color_data.palette = g_strdup (value);
+-
+-  return TRUE;
+-}
+-
+-static gboolean
+ add_confirm_overwrite (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+ {
+   options.file_data.confirm_overwrite = TRUE;
+@@ -908,19 +545,6 @@ add_file_filter (const gchar * option_name, const gchar * value, gpointer data,
+ }
+ 
+ static gboolean
+-set_color_mode (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+-{
+-  if (strcasecmp (value, "hex") == 0)
+-    options.color_data.mode = YAD_COLOR_HEX;
+-  else if (strcasecmp (value, "rgb") == 0)
+-    options.color_data.mode = YAD_COLOR_RGB;
+-  else
+-    g_printerr (_("Unknown color mode: %s\n"), value);
+-
+-  return TRUE;
+-}
+-
+-static gboolean
+ set_buttons_layout (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+ {
+   if (strcasecmp (value, "spread") == 0)
+@@ -972,23 +596,6 @@ set_justify (const gchar * option_name, const gchar * value, gpointer data, GErr
+ }
+ 
+ static gboolean
+-set_tab_pos (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+-{
+-  if (strcasecmp (value, "top") == 0)
+-    options.notebook_data.pos = GTK_POS_TOP;
+-  else if (strcasecmp (value, "bottom") == 0)
+-    options.notebook_data.pos = GTK_POS_BOTTOM;
+-  else if (strcasecmp (value, "left") == 0)
+-    options.notebook_data.pos = GTK_POS_LEFT;
+-  else if (strcasecmp (value, "right") == 0)
+-    options.notebook_data.pos = GTK_POS_RIGHT;
+-  else
+-    g_printerr (_("Unknown tab position type: %s\n"), value);
+-
+-  return TRUE;
+-}
+-
+-static gboolean
+ set_expander (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+ {
+   if (value)
+@@ -999,60 +606,6 @@ set_expander (const gchar * option_name, const gchar * value, gpointer data, GEr
+ }
+ 
+ static gboolean
+-set_scale_value (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+-{
+-  options.scale_data.value = atoi (value);
+-  options.scale_data.have_value = TRUE;
+-
+-  return TRUE;
+-}
+-
+-static gboolean
+-set_ellipsize (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+-{
+-  if (strcasecmp (value, "none") == 0)
+-    options.list_data.ellipsize = PANGO_ELLIPSIZE_NONE;
+-  else if (strcasecmp (value, "start") == 0)
+-    options.list_data.ellipsize = PANGO_ELLIPSIZE_START;
+-  else if (strcasecmp (value, "middle") == 0)
+-    options.list_data.ellipsize = PANGO_ELLIPSIZE_MIDDLE;
+-  else if (strcasecmp (value, "end") == 0)
+-    options.list_data.ellipsize = PANGO_ELLIPSIZE_END;
+-  else
+-    g_printerr (_("Unknown ellipsize type: %s\n"), value);
+-
+-  return TRUE;
+-}
+-
+-static gboolean
+-set_orient (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+-{
+-  if (strncasecmp (value, "hor", 3) == 0)
+-    options.paned_data.orient = GTK_ORIENTATION_HORIZONTAL;
+-  else if (strncasecmp (value, "vert", 4) == 0)
+-    options.print_data.type = GTK_ORIENTATION_VERTICAL;
+-  else
+-    g_printerr (_("Unknown orientation: %s\n"), value);
+-
+-  return TRUE;
+-}
+-
+-static gboolean
+-set_print_type (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+-{
+-  if (strcasecmp (value, "text") == 0)
+-    options.print_data.type = YAD_PRINT_TEXT;
+-  else if (strcasecmp (value, "image") == 0)
+-    options.print_data.type = YAD_PRINT_IMAGE;
+-  else if (strcasecmp (value, "raw") == 0)
+-    options.print_data.type = YAD_PRINT_RAW;
+-  else
+-    g_printerr (_("Unknown source type: %s\n"), value);
+-
+-  return TRUE;
+-}
+-
+-static gboolean
+ set_progress_log (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+ {
+   if (value)
+@@ -1064,19 +617,6 @@ set_progress_log (const gchar * option_name, const gchar * value, gpointer data,
+ }
+ 
+ static gboolean
+-set_size (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+-{
+-  if (strcasecmp (value, "fit") == 0)
+-    options.picture_data.size = YAD_PICTURE_FIT;
+-  else if (strcasecmp (value, "orig") == 0)
+-    options.picture_data.size = YAD_PICTURE_ORIG;
+-  else
+-    g_printerr (_("Unknown size type: %s\n"), value);
+-
+-  return TRUE;
+-}
+-
+-static gboolean
+ set_posx (const gchar * option_name, const gchar * value, gpointer data, GError ** err)
+ {
+   options.data.use_posx = TRUE;
+@@ -1252,44 +792,16 @@ parse_signal (const gchar * option_name, const gchar * value, gpointer data, GEr
+ void
+ yad_set_mode (void)
+ {
+-  if (calendar_mode)
+-    options.mode = YAD_MODE_CALENDAR;
+-  else if (color_mode)
+-    options.mode = YAD_MODE_COLOR;
+-  else if (dnd_mode)
+-    options.mode = YAD_MODE_DND;
+-  else if (entry_mode)
+-    options.mode = YAD_MODE_ENTRY;
+-  else if (file_mode)
++  if (file_mode)
+     options.mode = YAD_MODE_FILE;
+-  else if (font_mode)
+-    options.mode = YAD_MODE_FONT;
+   else if (form_mode)
+     options.mode = YAD_MODE_FORM;
+ #ifdef HAVE_HTML
+   else if (html_mode)
+     options.mode = YAD_MODE_HTML;
+ #endif
+-  else if (icons_mode)
+-    options.mode = YAD_MODE_ICONS;
+-  else if (list_mode)
+-    options.mode = YAD_MODE_LIST;
+-  else if (multi_progress_mode)
+-    options.mode = YAD_MODE_MULTI_PROGRESS;
+-  else if (notebook_mode)
+-    options.mode = YAD_MODE_NOTEBOOK;
+-  else if (notification_mode)
+-    options.mode = YAD_MODE_NOTIFICATION;
+-  else if (paned_mode)
+-    options.mode = YAD_MODE_PANED;
+-  else if (picture_mode)
+-    options.mode = YAD_MODE_PICTURE;
+-  else if (print_mode)
+-    options.mode = YAD_MODE_PRINT;
+   else if (progress_mode)
+     options.mode = YAD_MODE_PROGRESS;
+-  else if (scale_mode)
+-    options.mode = YAD_MODE_SCALE;
+   else if (text_mode)
+     options.mode = YAD_MODE_TEXTINFO;
+   else if (about_mode)
+@@ -1385,36 +897,6 @@ yad_options_init (void)
+   options.common_data.spell_lang = NULL;
+ #endif
+ 
+-  /* Initialize calendar data */
+-  options.calendar_data.day = -1;
+-  options.calendar_data.month = -1;
+-  options.calendar_data.year = -1;
+-  options.calendar_data.details = NULL;
+-
+-  /* Initialize color data */
+-  options.color_data.init_color = NULL;
+-  options.color_data.gtk_palette = FALSE;
+-  options.color_data.use_palette = FALSE;
+-  options.color_data.expand_palette = FALSE;
+-  options.color_data.palette = NULL;
+-  options.color_data.extra = FALSE;
+-  options.color_data.alpha = FALSE;
+-  options.color_data.mode = YAD_COLOR_HEX;
+-
+-  /* Initialize DND data */
+-  options.dnd_data.tooltip = FALSE;
+-
+-  /* Initialize entry data */
+-  options.entry_data.entry_text = NULL;
+-  options.entry_data.entry_label = NULL;
+-  options.entry_data.hide_text = FALSE;
+-  options.entry_data.completion = FALSE;
+-  options.entry_data.numeric = FALSE;
+-  options.entry_data.licon = NULL;
+-  options.entry_data.licon_action = NULL;
+-  options.entry_data.ricon = NULL;
+-  options.entry_data.ricon_action = NULL;
+-
+   /* Initialize file data */
+   options.file_data.directory = FALSE;
+   options.file_data.save = FALSE;
+@@ -1424,10 +906,6 @@ yad_options_init (void)
+   options.file_data.mime_filt = NULL;
+   options.file_data.image_filt = NULL;
+ 
+-  /* Initialize font data */
+-  options.font_data.preview = NULL;
+-  options.font_data.separate_output = FALSE;
+-
+   /* Initialize form data */
+   options.form_data.fields = NULL;
+   options.form_data.columns = 1;
+@@ -1445,72 +923,6 @@ yad_options_init (void)
+   options.html_data.encoding = NULL;
+ #endif
+ 
+-  /* Initialize icons data */
+-  options.icons_data.directory = NULL;
+-  options.icons_data.compact = FALSE;
+-  options.icons_data.generic = FALSE;
+-  options.icons_data.width = -1;
+-  options.icons_data.term = settings.term;
+-  options.icons_data.sort_by_name = FALSE;
+-  options.icons_data.descend = FALSE;
+-  options.icons_data.single_click = FALSE;
+-#ifdef HAVE_GIO
+-  options.icons_data.monitor = FALSE;
+-#endif
+-
+-  /* Initialize list data */
+-  options.list_data.columns = NULL;
+-  options.list_data.no_headers = FALSE;
+-  options.list_data.checkbox = FALSE;
+-  options.list_data.radiobox = FALSE;
+-  options.list_data.print_all = FALSE;
+-  options.list_data.rules_hint = TRUE;
+-  options.list_data.grid_lines = GTK_TREE_VIEW_GRID_LINES_NONE;
+-  options.list_data.print_column = 0;
+-  options.list_data.hide_column = 0;
+-  options.list_data.expand_column = -1; // must be -1 for disable expand by default (keep the original behavior)
+-  options.list_data.search_column = 0;
+-  options.list_data.tooltip_column = 0;
+-  options.list_data.sep_column = 0;
+-  options.list_data.sep_value = NULL;
+-  options.list_data.limit = 0;
+-  options.list_data.editable_cols = NULL;
+-  options.list_data.wrap_width = 0;
+-  options.list_data.wrap_cols = NULL;
+-  options.list_data.ellipsize = PANGO_ELLIPSIZE_NONE;
+-  options.list_data.ellipsize_cols = NULL;
+-  options.list_data.dclick_action = NULL;
+-  options.list_data.select_action = NULL;
+-  options.list_data.regex_search = FALSE;
+-  options.list_data.clickable = TRUE;
+-  options.list_data.no_selection = FALSE;
+-
+-  /* Initialize multiprogress data */
+-  options.multi_progress_data.bars = NULL;
+-  options.multi_progress_data.watch_bar = 0;
+-
+-  /* Initialize notebook data */
+-  options.notebook_data.tabs = NULL;
+-  options.notebook_data.borders = 5;
+-  options.notebook_data.pos = GTK_POS_TOP;
+-
+-  /* Initialize notification data */
+-  options.notification_data.middle = TRUE;
+-  options.notification_data.hidden = FALSE;
+-  options.notification_data.menu = NULL;
+-
+-  /* Initialize paned data */
+-  options.paned_data.orient = GTK_ORIENTATION_VERTICAL;
+-  options.paned_data.splitter = -1;
+-
+-  /* Initialize picture data */
+-  options.picture_data.size = YAD_PICTURE_ORIG;
+-  options.picture_data.inc = 5;
+-
+-  /* Initialize print data */
+-  options.print_data.type = YAD_PRINT_TEXT;
+-  options.print_data.headers = FALSE;
+-
+   /* Initialize progress data */
+   options.progress_data.progress_text = NULL;
+   options.progress_data.percentage = 0;
+@@ -1525,18 +937,6 @@ yad_options_init (void)
+   options.progress_data.log_on_top = FALSE;
+   options.progress_data.log_height = -1;
+ 
+-  /* Initialize scale data */
+-  options.scale_data.value = 0;
+-  options.scale_data.min_value = 0;
+-  options.scale_data.max_value = 100;
+-  options.scale_data.step = 1;
+-  options.scale_data.page = -1;
+-  options.scale_data.print_partial = FALSE;
+-  options.scale_data.hide_value = FALSE;
+-  options.scale_data.have_value = FALSE;
+-  options.scale_data.invert = FALSE;
+-  options.scale_data.marks = NULL;
+-
+   /* Initialize text data */
+   options.text_data.fore = NULL;
+   options.text_data.back = NULL;
+@@ -1575,42 +975,12 @@ yad_create_context (void)
+   g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+   g_option_context_add_group (tmp_ctx, a_group);
+ 
+-  /* Adds calendar option entries */
+-  a_group = g_option_group_new ("calendar", _("Calendar options"), _("Show calendar options"), NULL, NULL);
+-  g_option_group_add_entries (a_group, calendar_options);
+-  g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+-  g_option_context_add_group (tmp_ctx, a_group);
+-
+-  /* Adds color option entries */
+-  a_group = g_option_group_new ("color", _("Color selection options"), _("Show color selection options"), NULL, NULL);
+-  g_option_group_add_entries (a_group, color_options);
+-  g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+-  g_option_context_add_group (tmp_ctx, a_group);
+-
+-  /* Adds dnd option entries */
+-  a_group = g_option_group_new ("dnd", _("DND options"), _("Show drag-n-drop options"), NULL, NULL);
+-  g_option_group_add_entries (a_group, dnd_options);
+-  g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+-  g_option_context_add_group (tmp_ctx, a_group);
+-
+-  /* Adds entry option entries */
+-  a_group = g_option_group_new ("entry", _("Text entry options"), _("Show text entry options"), NULL, NULL);
+-  g_option_group_add_entries (a_group, entry_options);
+-  g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+-  g_option_context_add_group (tmp_ctx, a_group);
+-
+   /* Adds file selection option entries */
+   a_group = g_option_group_new ("file", _("File selection options"), _("Show file selection options"), NULL, NULL);
+   g_option_group_add_entries (a_group, file_options);
+   g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+   g_option_context_add_group (tmp_ctx, a_group);
+ 
+-  /* Add font selection option entries */
+-  a_group = g_option_group_new ("font", _("Font selection options"), _("Show font selection options"), NULL, NULL);
+-  g_option_group_add_entries (a_group, font_options);
+-  g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+-  g_option_context_add_group (tmp_ctx, a_group);
+-
+   /* Add form option entries */
+   a_group = g_option_group_new ("form", _("Form options"), _("Show form options"), NULL, NULL);
+   g_option_group_add_entries (a_group, form_options);
+@@ -1625,68 +995,12 @@ yad_create_context (void)
+   g_option_context_add_group (tmp_ctx, a_group);
+ #endif
+ 
+-  /* Add icons option entries */
+-  a_group = g_option_group_new ("icons", _("Icons box options"), _("Show icons box options"), NULL, NULL);
+-  g_option_group_add_entries (a_group, icons_options);
+-  g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+-  g_option_context_add_group (tmp_ctx, a_group);
+-
+-  /* Adds list option entries */
+-  a_group = g_option_group_new ("list", _("List options"), _("Show list options"), NULL, NULL);
+-  g_option_group_add_entries (a_group, list_options);
+-  g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+-  g_option_context_add_group (tmp_ctx, a_group);
+-
+-  /* Adds multi progress option entries */
+-  a_group = g_option_group_new ("multi-progress", _("Multi progress bars options"),
+-                                _("Show multi progress bars options"), NULL, NULL);
+-  g_option_group_add_entries (a_group, multi_progress_options);
+-  g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+-  g_option_context_add_group (tmp_ctx, a_group);
+-
+-  /* Adds notebook option entries */
+-  a_group = g_option_group_new ("notebook", _("Notebook options"), _("Show notebook dialog options"), NULL, NULL);
+-  g_option_group_add_entries (a_group, notebook_options);
+-  g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+-  g_option_context_add_group (tmp_ctx, a_group);
+-
+-  /* Adds notification option entries */
+-  a_group = g_option_group_new ("notification", _("Notification icon options"),
+-                                _("Show notification icon options"), NULL, NULL);
+-  g_option_group_add_entries (a_group, notification_options);
+-  g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+-  g_option_context_add_group (tmp_ctx, a_group);
+-
+-  /* Adds paned option entries */
+-  a_group = g_option_group_new ("paned", _("Paned dialog options"), _("Show paned dialog options"), NULL, NULL);
+-  g_option_group_add_entries (a_group, paned_options);
+-  g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+-  g_option_context_add_group (tmp_ctx, a_group);
+-
+-  /* Adds picture option entries */
+-  a_group = g_option_group_new ("picture", _("Picture dialog options"), _("Show picture dialog options"), NULL, NULL);
+-  g_option_group_add_entries (a_group, picture_options);
+-  g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+-  g_option_context_add_group (tmp_ctx, a_group);
+-
+-  /* Adds print option entries */
+-  a_group = g_option_group_new ("print", _("Print dialog options"), _("Show print dialog options"), NULL, NULL);
+-  g_option_group_add_entries (a_group, print_options);
+-  g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+-  g_option_context_add_group (tmp_ctx, a_group);
+-
+   /* Adds progress option entries */
+   a_group = g_option_group_new ("progress", _("Progress options"), _("Show progress options"), NULL, NULL);
+   g_option_group_add_entries (a_group, progress_options);
+   g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+   g_option_context_add_group (tmp_ctx, a_group);
+ 
+-  /* Adds scale option entries */
+-  a_group = g_option_group_new ("scale", _("Scale options"), _("Show scale options"), NULL, NULL);
+-  g_option_group_add_entries (a_group, scale_options);
+-  g_option_group_set_translation_domain (a_group, GETTEXT_PACKAGE);
+-  g_option_context_add_group (tmp_ctx, a_group);
+-
+   /* Adds text option entries */
+   a_group = g_option_group_new ("text", _("Text information options"), _("Show text information options"), NULL, NULL);
+   g_option_group_add_entries (a_group, text_options);

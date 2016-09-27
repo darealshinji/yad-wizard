@@ -1,7 +1,5 @@
-Other patches.
-
 diff --git a/src/about.c b/src/about.c
-index 827334e..2357a28 100644
+index 827334e..80946e6 100644
 --- a/src/about.c
 +++ b/src/about.c
 @@ -52,7 +52,8 @@ yad_about (void)
@@ -15,7 +13,7 @@ index 827334e..2357a28 100644
  
    dialog = gtk_about_dialog_new ();
 diff --git a/src/form.c b/src/form.c
-index 4fac0f9..4c64a8f 100644
+index 2b9645c..33d6e2f 100644
 --- a/src/form.c
 +++ b/src/form.c
 @@ -1013,7 +1013,7 @@ form_create_widget (GtkWidget * dlg)
@@ -28,10 +26,10 @@ index 4fac0f9..4c64a8f 100644
                gtk_table_attach (GTK_TABLE (tbl), e, col * 2, 2 + col * 2, row, row + 1, GTK_EXPAND | GTK_FILL, 0, 5, 5);
  #else
 diff --git a/src/option.c b/src/option.c
-index 2b37366..ad4d2bc 100644
+index d411f28..2bf0370 100644
 --- a/src/option.c
 +++ b/src/option.c
-@@ -314,7 +314,12 @@ static GOptionEntry form_options[] = {
+@@ -214,7 +214,12 @@ static GOptionEntry form_options[] = {
    { "form", 0, G_OPTION_FLAG_IN_MAIN, G_OPTION_ARG_NONE, &form_mode,
      N_("Display form dialog"), NULL },
    { "field", 0, 0, G_OPTION_ARG_CALLBACK, add_field,
@@ -46,7 +44,7 @@ index 2b37366..ad4d2bc 100644
      N_("Set alignment of filed labels (left, center or right)"), N_("TYPE") },
    { "columns", 0, 0, G_OPTION_ARG_INT, &options.form_data.columns,
 diff --git a/src/util.c b/src/util.c
-index 6fb6e71..1e9834b 100644
+index e5a6c72..f67adf2 100644
 --- a/src/util.c
 +++ b/src/util.c
 @@ -199,9 +199,9 @@ get_color (GdkColor *c, guint64 alpha)
@@ -54,10 +52,10 @@ index 6fb6e71..1e9834b 100644
          {
            if (options.color_data.extra)
 -            res = g_strdup_printf ("#%s%hx", cs + 1, alpha);
-+            res = g_strdup_printf ("#%s%hx", cs + 1, (int)alpha);
++            res = g_strdup_printf ("#%s%hx", cs + 1, (int) alpha);
            else
 -            res = g_strdup_printf ("#%c%c%c%c%c%c%hx", cs[1], cs[2], cs[5], cs[6], cs[9], cs[10], alpha / 256);
-+            res = g_strdup_printf ("#%c%c%c%c%c%c%hx", cs[1], cs[2], cs[5], cs[6], cs[9], cs[10], (int)(alpha / 256));
++            res = g_strdup_printf ("#%c%c%c%c%c%c%hx", cs[1], cs[2], cs[5], cs[6], cs[9], cs[10], (int) alpha / 256);
          }
        else
          {

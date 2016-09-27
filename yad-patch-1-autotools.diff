@@ -1,0 +1,58 @@
+diff --git a/configure.ac b/configure.ac
+index baca6bd..3556a41 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -13,6 +13,9 @@ AM_MAINTAINER_MODE
+ 
+ IT_PROG_INTLTOOL([0.40.0])
+ 
++#source code: https://downloads.sourceforge.net/project/yad-dialog/yad-0.37.0.tar.xz
++CFLAGS=""
++CXXFLAGS=""
+ AC_PROG_CC
+ 
+ AC_ARG_WITH([gtk],
+diff --git a/src/Makefile.am b/src/Makefile.am
+index 3b5c249..caca3af 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -6,29 +6,15 @@ bin_PROGRAMS = yad
+ 
+ yad_SOURCES = 			\
+ 	about.c			\
+-	calendar.c		\
+-	color.c			\
+-	dnd.c           	\
+-	entry.c			\
+ 	file.c			\
+-	font.c			\
+ 	form.c			\
+-	icons.c			\
+-	list.c			\
+-	multi-progress.c	\
+-	notebook.c		\
+-	notification.c		\
+ 	option.c		\
+-	paned.c			\
+-	picture.c       \
+-	print.c			\
+ 	progress.c		\
+-	scale.c			\
+ 	text.c			\
+ 	util.c			\
+ 	main.c			\
+ 	yad.h			\
+-	calendar.xpm
++	$(NULL)
+ 
+ if HTML
+ yad_SOURCES += html.c
+@@ -36,6 +22,8 @@ endif
+ 
+ yad_CFLAGS = $(GTK_CFLAGS) $(HTML_CFLAGS) $(SPELL_CFLAGS) $(SOURCEVIEW_CFLAGS)
+ yad_LDADD = $(GTK_LIBS) $(HTML_LIBS) $(SPELL_LIBS) $(SOURCEVIEW_LIBS)
++yad_CFLAGS += $(XCFLAGS)
++yad_LDFLAGS = $(XLDFLAGS)
+ 
+ if BUILD_IB
+ bin_PROGRAMS += yad-icon-browser
